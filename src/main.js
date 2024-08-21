@@ -153,13 +153,14 @@ function run() {
 
       function countPassedTests(node) {
         for (let key in node) {
-          switch (typeof key) {
+          const value = node[key];
+          switch (typeof value) {
             case 'object':
-              countPassedTests(node[key]);
+              countPassedTests(value);
               break;
             case 'boolean':
               taskCount++;
-              taskPassed += node[key] ? 1 : 0;
+              taskPassed += value ? 1 : 0;
               break;
           }
         }

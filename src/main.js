@@ -146,6 +146,7 @@ function run() {
       score = 0
     } else {
       const parsedResults = parseGradleTestResults(output);
+      console.dir(parsedResults);
 
       let taskCount = 0;
       let taskPassed = 0;
@@ -194,6 +195,7 @@ function run() {
       ],
     }
 
+    console.log(result)
     core.setOutput('result', btoa(JSON.stringify(result)))
   } catch (error) {
     const result = {

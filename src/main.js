@@ -167,7 +167,7 @@ function run() {
 
       countPassedTests(parsedResults);
 
-      if (taskCount === 0) {
+      if (taskCount !== 0) {
         if (maxScore === 0) {
           maxScore = taskCount;
           score = taskPassed;

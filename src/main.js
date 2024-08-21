@@ -48,6 +48,36 @@ function getInputs() {
   }
 }
 
+function parseGradleTestResults(testResults) {
+  const tests = {};
+
+  testResults.split('\n').forEach((line) => {
+    const trimmedLine = line.trim();
+
+    const match = trimmedLine.match(/(.+)\s+(PASSED|FAILED)/);
+    if (match) {
+      const hierarchy = match[1].split(/\s+>\s+/);
+      const status = match[2];
+      const isPassed = status === 'PASSED';
+
+      let currentLevel = tests;
+
+      hierarchy.forEach((level, index) => {
+        if (index === hierarchy.length - 1) {
+          currentLevel[level] = isPassed;
+        } else {
+          if (!currentLevel[level]) {
+            currentLevel[level] = {};
+          }
+          currentLevel = currentLevel[level];
+        }
+      });
+    }
+  });
+
+  return tests;
+}
+
 function executeTest(command, input, timeout) {
   try {
     const output = execSync(command, {
@@ -103,6 +133,7 @@ function run() {
 
     let status = 'pass'
     let message = null
+    let maxScore = inputs.maxScore;
     let score = inputs.maxScore
 
     if (error) {
@@ -113,12 +144,42 @@ function run() {
       status = 'fail'
       message = `Output does not match expected: ${inputs.expectedOutput} Got: ${output}`
       score = 0
+    } else {
+      const parsedResults = parseGradleTestResults(output);
+
+      let taskCount = 0;
+      let taskPassed = 0;
+
+      function countPassedTests(node) {
+        for (let key in node) {
+          switch (typeof key) {
+            case 'object':
+              countPassedTests(node[key]);
+              break;
+            case 'boolean':
+              taskCount++;
+              taskPassed += node[key] ? 1 : 0;
+              break;
+          }
+        }
+      }
+
+      countPassedTests(parsedResults);
+
+      if (taskCount === 0) {
+        if (maxScore === 0) {
+          maxScore = taskCount;
+          score = taskPassed;
+        } else {
+          score = taskPassed / taskCount;
+        }
+      }
     }
 
     const result = {
       version: 1,
       status,
-      max_score: inputs.maxScore,
+      max_score: maxScore,
       tests: [
         {
           name: inputs.testName,
@@ -133,7 +194,6 @@ function run() {
       ],
     }
 
-    console.log(result)
     core.setOutput('result', btoa(JSON.stringify(result)))
   } catch (error) {
     const result = {

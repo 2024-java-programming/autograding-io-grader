@@ -87,10 +87,13 @@ function executeTest(command, input, timeout) {
       output,
     }
   } catch (e) {
-    const message = e.message.includes('ETIMEDOUT') ? 'Command was killed due to timeout' : e.message
+    const stdout = e.stdout ? e.stdout.toString().trim() : '';
+    const stderr = e.stderr ? e.stderr.toString().trim() : '';
+
     return {
-      error: message,
-    }
+      output: stdout,
+      error: stderr || e.message.includes('ETIMEDOUT') ? 'Command was killed due to timeout' : e.message,
+    };
   }
 }
 
@@ -132,7 +135,7 @@ function run() {
     let maxScore = inputs.maxScore;
     let score = inputs.maxScore
 
-    const parsedResults = parseGradleTestResults(output || error);
+    const parsedResults = parseGradleTestResults(output);
     console.dir(parsedResults);
 
     let taskCount = 0;

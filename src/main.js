@@ -18,12 +18,8 @@ function getInputs() {
     required: true,
   })
   const input = core.getInput('input').trim()
-  const expectedOutput = core.getInput('expected-output', {
-    required: true,
-  })
-  const comparisonMethod = core.getInput('comparison-method', {
-    required: true,
-  })
+  const expectedOutput = core.getInput('expected-output')
+  const comparisonMethod = core.getInput('comparison-method')
   const timeout = parseFloat(core.getInput('timeout') || 10) * 60000 // Convert to minutes
 
   const maxScore = parseInt(core.getInput('max-score') || 0)
@@ -136,47 +132,49 @@ function run() {
     let maxScore = inputs.maxScore;
     let score = inputs.maxScore
 
-    if (error) {
-      status = 'error'
-      message = error
-      score = 0
-    } else if (!compareOutput(output, inputs.expectedOutput, inputs.comparisonMethod)) {
-      status = 'fail'
-      message = `Output does not match expected: ${inputs.expectedOutput} Got: ${output}`
-      score = 0
-    } else {
-      const parsedResults = parseGradleTestResults(output);
-      console.dir(parsedResults);
+    const parsedResults = parseGradleTestResults(output || error);
+    console.dir(parsedResults);
 
-      let taskCount = 0;
-      let taskPassed = 0;
+    let taskCount = 0;
+    let taskPassed = 0;
 
-      function countPassedTests(node) {
-        for (let key in node) {
-          const value = node[key];
-          switch (typeof value) {
-            case 'object':
-              countPassedTests(value);
-              break;
-            case 'boolean':
-              taskCount++;
-              taskPassed += value ? 1 : 0;
-              break;
-          }
+    function countPassedTests(node) {
+      for (let key in node) {
+        const value = node[key];
+        switch (typeof value) {
+          case 'object':
+            countPassedTests(value);
+            break;
+          case 'boolean':
+            taskCount++;
+            taskPassed += value ? 1 : 0;
+            break;
         }
       }
+    }
 
-      countPassedTests(parsedResults);
+    countPassedTests(parsedResults);
 
-      if (taskCount > 0) {
-        console.log(`Collected ${taskCount} tasks, ${taskPassed} passed.`);
+    if (taskCount > 0) {
+      console.log(`Collected ${taskCount} tasks, ${taskPassed} passed.`);
 
-        if (maxScore === 0) {
-          maxScore = taskCount;
-          score = taskPassed;
-        } else {
-          score = taskPassed / taskCount;
-        }
+      if (maxScore === 0) {
+        maxScore = taskCount;
+        score = taskPassed;
+      } else {
+        score = taskPassed / taskCount;
+      }
+    } else {
+      console.log(`No task found, fallback to io handling.`);
+
+      if (error) {
+        status = 'error'
+        message = error
+        score = 0
+      } else if (!compareOutput(output, inputs.expectedOutput, inputs.comparisonMethod)) {
+        status = 'fail'
+        message = `Output does not match expected: ${inputs.expectedOutput} Got: ${output}`
+        score = 0
       }
     }
 

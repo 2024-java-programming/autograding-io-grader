@@ -90,24 +90,6 @@ test('outputs error if command is not provided', () => {
   expect(result.tests[0].message).toContain('Input required and not supplied: command')
 })
 
-test('outputs error if expected-output is not provided', () => {
-  const result = runTestWithEnv({
-    'INPUT_TEST-NAME': 'Test 1',
-    INPUT_COMMAND: 'echo Hello, World!',
-  })
-
-  expect(result.tests[0].message).toContain('Input required and not supplied: expected-output')
-})
-
-test('outputs error if comparison-method is not provided', () => {
-  const result = runTestWithEnv({
-    'INPUT_TEST-NAME': 'Test 1',
-    INPUT_COMMAND: 'echo Hello, World!',
-    'INPUT_EXPECTED-OUTPUT': 'Hello, World!',
-  })
-  expect(result.tests[0].message).toContain('Input required and not supplied: comparison-method')
-})
-
 test('throws error for invalid comparison method', () => {
   const result = runTestWithEnv({
     'INPUT_TEST-NAME': 'Test Invalid Comparison',

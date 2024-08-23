@@ -164,10 +164,9 @@ function run() {
     if (taskCount > 0) {
       console.log(`Collected ${taskCount} tasks, ${taskPassed} passed.`);
 
-      passScore = passScore > 0 ? passScore : taskCount * 0.8;
-
-      if (maxScore === 0) {
+      if (maxScore === 0) { // Lazy case, full auto
         maxScore = taskCount;
+        passScore = taskCount * 0.8;
         score = taskPassed;
       } else {
         score = (taskPassed / taskCount) * maxScore;

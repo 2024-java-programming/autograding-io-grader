@@ -22,6 +22,7 @@ function getInputs() {
   const comparisonMethod = core.getInput('comparison-method')
   const timeout = parseFloat(core.getInput('timeout') || 10) * 60000 // Convert to minutes
 
+  const passScore = parseInt(core.getInput('pass-score') || 0)
   const maxScore = parseInt(core.getInput('max-score') || 0)
 
   if (!['exact', 'contains', 'regex'].includes(comparisonMethod)) {
@@ -40,6 +41,7 @@ function getInputs() {
     expectedOutput,
     comparisonMethod,
     timeout,
+    passScore: passScore > 0 ? passScore : maxScore * 0.8,
     maxScore,
   }
 }
@@ -133,6 +135,7 @@ function run() {
     let status = 'pass'
     let message = null
     let maxScore = inputs.maxScore;
+    let passScore = inputs.passScore;
     let score = inputs.maxScore
 
     const parsedResults = parseGradleTestResults(output);
@@ -161,11 +164,18 @@ function run() {
     if (taskCount > 0) {
       console.log(`Collected ${taskCount} tasks, ${taskPassed} passed.`);
 
+      passScore = passScore > 0 ? passScore : taskCount * 0.8;
+
       if (maxScore === 0) {
         maxScore = taskCount;
         score = taskPassed;
       } else {
-        score = taskPassed / taskCount;
+        score = (taskPassed / taskCount) * maxScore;
+      }
+
+      if (score < passScore) {
+        status = 'fail'
+        message = `You need earn more score.`
       }
     } else {
       console.log(`No task found, fallback to io handling.`);

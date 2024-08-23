@@ -16,13 +16,16 @@ inputs:
     required: false
   expected-output:
     description: "Expected stdout from the command."
-    required: true
+    required: false
   comparison-method:
     description: "Method for comparing stdout. Supported values: `included`, `exact`, `regex`."
-    required: true
+    required: false
   timeout:
     description: "Duration (in minutes) before the test is terminated. Defaults to 10 minutes with a maximum limit of 60 minutes."
     default: "10"
+    required: false
+  pass-score:
+    description: "The amount of points a student should earn can pass test."
     required: false
   max-score:
     description: "The maximum amount of points a student can receive for this test."

@@ -89,12 +89,9 @@ function executeTest(command, input, timeout) {
       output,
     }
   } catch (e) {
-    const stdout = e.stdout ? e.stdout.toString().trim() : '';
-    const stderr = e.stderr ? e.stderr.toString().trim() : '';
-
     return {
-      output: stdout,
-      error: stderr || e.message.includes('ETIMEDOUT') ? 'Command was killed due to timeout' : e.message,
+      output: e.stdout ? e.stdout.toString().trim() : '',
+      error: e.message.includes('ETIMEDOUT') ? 'Command was killed due to timeout' : e.message,
     };
   }
 }
@@ -131,6 +128,8 @@ function run() {
     const startTime = new Date()
     const {output, error} = executeTest(inputs.command, inputs.input, inputs.timeout)
     const endTime = new Date()
+
+    console.log(output, error);
 
     let status = 'pass'
     let message = null

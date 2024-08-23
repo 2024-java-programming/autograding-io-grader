@@ -25,12 +25,8 @@ function getInputs() {
   const passScore = parseInt(core.getInput('pass-score') || 0)
   const maxScore = parseInt(core.getInput('max-score') || 0)
 
-  if (!['exact', 'contains', 'regex'].includes(comparisonMethod)) {
+  if (!!comparisonMethod && !['exact', 'contains', 'regex'].includes(comparisonMethod)) {
     throw new Error(`Invalid comparison method: ${comparisonMethod}`)
-  }
-
-  if (!testName || !command || !expectedOutput || !comparisonMethod) {
-    throw new Error('Required inputs are missing or invalid')
   }
 
   return {
